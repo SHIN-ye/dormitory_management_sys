@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生公寓管理系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if session.user_id %}
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">学生公寓管理系统</div>
+            <nav>
+                <a href="{{ url_for('index') }}" class="nav-item">🏠 首页</a>
+                {% if session.role == 'student' %}
+                <a href="{{ url_for('my_accommodation') }}" class="nav-item">🏨 我的住宿</a>
+                <a href="{{ url_for('my_repairs') }}" class="nav-item">🔧 我的报修</a>
+                <a href="{{ url_for('my_fees') }}" class="nav-item">💰 我的费用</a>
+                <a href="{{ url_for('my_visitors') }}" class="nav-item">👥 我的访客</a>
+                <a href="{{ url_for('my_profile') }}" class="nav-item">👤 个人资料</a>
+                <a href="{{ url_for('announcement_list') }}" class="nav-item">📢 公告</a>
+                {% else %}
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('building_list') }}" class="nav-item">🏢 宿舍楼管理</a>
+                <a href="{{ url_for('room_list') }}" class="nav-item">🚪 房间管理</a>
+                <a href="{{ url_for('student_list') }}" class="nav-item">👤 学生管理</a>
+                <a href="{{ url_for('user_list') }}" class="nav-item">👥 用户管理</a>
+                {% endif %}
+                <a href="{{ url_for('accommodation_list') }}" class="nav-item">🏨 入住管理</a>
+                <a href="{{ url_for('checkout_request_list') }}" class="nav-item">📝 退宿审核</a>
+                <a href="{{ url_for('transfer_request_list') }}" class="nav-item">🔄 宿舍调换</a>
+                <a href="{{ url_for('repair_list') }}" class="nav-item">🔧 报修管理</a>
+                <a href="{{ url_for('visitor_list') }}" class="nav-item">👥 访客管理</a>
+                <a href="{{ url_for('fee_list') }}" class="nav-item">💰 费用管理</a>
+                <a href="{{ url_for('announcement_list') }}" class="nav-item">📢 公告管理</a>
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('operation_log_list') }}" class="nav-item">📋 操作日志</a>
+                {% endif %}
+                {% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <span>{{ session.username }}（{{ session.role }}）</span>
+                <a href="{{ url_for('change_password') }}" class="btn btn-sm">修改密码</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-sm">退出</a>
+            </div>
+        </aside>
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+    {% block fullpage %}{% endblock %}
+    {% endif %}
+</body>
+</html>

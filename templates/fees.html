@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>费用管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('fee_add') }}" class="btn btn-primary">+ 新增费用</a>
+    <a href="{{ url_for('fee_export', search=search, status=status_filter) }}" class="btn">📥 导出Excel</a>
+</p>
+
+<details style="margin-bottom:16px;">
+    <summary style="cursor:pointer;color:#1890ff;font-size:14px;">批量生成费用（存储过程）</summary>
+    <form method="post" action="{{ url_for('fee_batch') }}" class="form-box" style="margin-top:12px;">
+        <div class="form-group">
+            <label>选择宿舍楼</label>
+            <select name="building_id" required class="form-control">
+                <option value="">-- 请选择 --</option>
+                {% for b in buildings %}
+                <option value="{{ b.id }}">{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>费用类型</label>
+            <select name="fee_type" required class="form-control">
+                <option value="住宿费">住宿费</option>
+                <option value="水电费">水电费</option>
+                <option value="维修费">维修费</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>金额（元）</label>
+            <input type="number" step="0.01" name="amount" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>截止日期</label>
+            <input type="date" name="due_date" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">批量生成</button>
+    </form>
+</details>
+
+<div class="search-bar">
+    <form method="get" action="{{ url_for('fee_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索费用类型/学生姓名..." class="form-control">
+        <select name="status" class="form-control">
+            <option value="">-- 全部状态 --</option>
+            <option value="未缴" {% if status_filter == '未缴' %}selected{% endif %}>未缴</option>
+            <option value="已缴" {% if status_filter == '已缴' %}selected{% endif %}>已缴</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search or status_filter %}<a href="{{ url_for('fee_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>学生</th>
+            <th>宿舍楼</th>
+            <th>房间号</th>
+            <th>费用类型</th>
+            <th>金额</th>
+            <th>截止日期</th>
+            <th>缴费日期</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for f in fees %}
+        <tr>
+            <td>{{ f.student.name }}</td>
+            <td>{{ f.room.building.name }}</td>
+            <td>{{ f.room.room_number }}</td>
+            <td>{{ f.fee_type }}</td>
+            <td>¥{{ f.amount }}</td>
+            <td>{{ f.due_date or '-' }}</td>
+            <td>{{ f.pay_date or '-' }}</td>
+            <td><span class="tag tag-{{ 'success' if f.status == '已缴' else 'danger' }}">{{ f.status }}</span></td>
+            <td class="actions">
+                {% if f.status == '未缴' %}
+                <form method="post" action="{{ url_for('fee_pay', fid=f.id) }}" class="inline-form" onsubmit="return confirm('确认缴费？')">
+                    <button type="submit" class="btn btn-sm btn-success">确认缴费</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search, status_filter and 'status=' ~ status_filter) }}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>访客管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('visitor_add') }}" class="btn btn-primary">+ 新增访客登记</a>
+    <a href="{{ url_for('visitor_export', search=search) }}" class="btn">📥 导出Excel</a>
+</p>
+<div class="search-bar">
+    <form method="get" action="{{ url_for('visitor_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索访客姓名/身份证号/受访学生..." class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search %}<a href="{{ url_for('visitor_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>受访学生</th>
+            <th>访客姓名</th>
+            <th>身份证号</th>
+            <th>事由</th>
+            <th>来访时间</th>
+            <th>离开时间</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for v in visitors %}
+        <tr>
+            <td>{{ v.student.name }} ({{ v.student.sno }})</td>
+            <td>{{ v.visitor_name }}</td>
+            <td>{{ v.id_card }}</td>
+            <td>{{ v.reason or '-' }}</td>
+            <td>{{ v.visit_date }}</td>
+            <td>{{ v.leave_date or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search) }}
+{% endblock %}

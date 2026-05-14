@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>入住管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('accommodation_add') }}" class="btn btn-primary">+ 新增入住</a>
+    <a href="{{ url_for('accommodation_export', search=search, status=status_filter) }}" class="btn">📥 导出Excel</a>
+</p>
+<div class="search-bar">
+    <form method="get" action="{{ url_for('accommodation_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索学生姓名..." class="form-control">
+        <select name="status" class="form-control">
+            <option value="">-- 全部状态 --</option>
+            <option value="入住" {% if status_filter == '入住' %}selected{% endif %}>入住</option>
+            <option value="已退宿" {% if status_filter == '已退宿' %}selected{% endif %}>已退宿</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search or status_filter %}<a href="{{ url_for('accommodation_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>学生</th>
+            <th>宿舍楼</th>
+            <th>房间号</th>
+            <th>入住日期</th>
+            <th>退宿日期</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for a in accs %}
+        <tr>
+            <td>{{ a.student.name }} ({{ a.student.sno }})</td>
+            <td>{{ a.room.building.name }}</td>
+            <td>{{ a.room.room_number }}</td>
+            <td>{{ a.check_in_date }}</td>
+            <td>{{ a.check_out_date or '-' }}</td>
+            <td><span class="tag tag-{{ 'success' if a.status == '入住' else 'default' }}">{{ a.status }}</span></td>
+            <td class="actions">
+                {% if a.status == '入住' %}
+                <form method="post" action="{{ url_for('accommodation_checkout', aid=a.id) }}" class="inline-form" onsubmit="return confirm('确认退宿？')">
+                    <button type="submit" class="btn btn-warning btn-sm">退宿</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search, status_filter and 'status=' ~ status_filter) }}
+{% endblock %}

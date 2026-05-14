@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>宿舍楼管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('building_add') }}" class="btn btn-primary">+ 添加宿舍楼</a>
+    <a href="{{ url_for('building_export', search=search) }}" class="btn">📥 导出Excel</a>
+</p>
+<div class="search-bar">
+    <form method="get" action="{{ url_for('building_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索名称/地址/管理员..." class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search %}<a href="{{ url_for('building_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>层数</th>
+            <th>地址</th>
+            <th>管理员</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for b in buildings %}
+        <tr>
+            <td>{{ b.name }}</td>
+            <td>{{ b.floors }}层</td>
+            <td>{{ b.address or '-' }}</td>
+            <td>{{ b.manager or '-' }}</td>
+            <td class="actions">
+                <a href="{{ url_for('building_edit', bid=b.id) }}" class="btn btn-sm">编辑</a>
+                <form method="post" action="{{ url_for('building_delete', bid=b.id) }}" class="inline-form" onsubmit="return confirm('删除宿舍楼将同时删除其下所有房间，确认？')">
+                    <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search) }}
+{% endblock %}

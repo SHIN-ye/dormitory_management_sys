@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>我的访客</h1>
+
+<h2>登记访客</h2>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>访客姓名</label>
+            <input type="text" name="visitor_name" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>身份证号</label>
+            <input type="text" name="id_card" required class="form-control" maxlength="18" pattern="\d{17}[\dXx]" title="请输入18位身份证号">
+        </div>
+        <div class="form-group">
+            <label>来访事由</label>
+            <input type="text" name="reason" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>来访时间</label>
+            <input type="datetime-local" name="visit_date" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>离开时间</label>
+            <input type="datetime-local" name="leave_date" class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">登记</button>
+        </div>
+    </form>
+</div>
+
+<h2 style="margin-top:32px;">访客记录</h2>
+<table>
+    <thead>
+        <tr>
+            <th>访客姓名</th>
+            <th>身份证号</th>
+            <th>事由</th>
+            <th>来访时间</th>
+            <th>离开时间</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for v in visitors %}
+        <tr>
+            <td>{{ v.visitor_name }}</td>
+            <td>{{ v.id_card }}</td>
+            <td>{{ v.reason or '-' }}</td>
+            <td>{{ v.visit_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ v.leave_date.strftime('%Y-%m-%d %H:%M') if v.leave_date else '-' }}</td>
+        </tr>
+    {% endfor %}
+    {% if not visitors %}
+        <tr><td colspan="5" style="text-align:center;color:#999;">暂无访客记录</td></tr>
+    {% endif %}
+    </tbody>
+</table>
+{% endblock %}

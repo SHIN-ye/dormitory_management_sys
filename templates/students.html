@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>学生管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('student_add') }}" class="btn btn-primary">+ 添加学生</a>
+    <a href="{{ url_for('student_import') }}" class="btn">📥 批量导入</a>
+    <a href="{{ url_for('student_export', search=search) }}" class="btn">📥 导出Excel</a>
+</p>
+<div class="search-bar">
+    <form method="get" action="{{ url_for('student_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索学号/姓名/专业/班级/手机..." class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search %}<a href="{{ url_for('student_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>学号</th>
+            <th>姓名</th>
+            <th>性别</th>
+            <th>出生日期</th>
+            <th>手机</th>
+            <th>专业</th>
+            <th>班级</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for s in students %}
+        <tr>
+            <td>{{ s.sno }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.gender or '-' }}</td>
+            <td>{{ s.birth or '-' }}</td>
+            <td>{{ s.phone or '-' }}</td>
+            <td>{{ s.major or '-' }}</td>
+            <td>{{ s.class_name or '-' }}</td>
+            <td class="actions">
+                <a href="{{ url_for('student_edit', sid=s.id) }}" class="btn btn-sm">编辑</a>
+                <form method="post" action="{{ url_for('student_delete', sid=s.id) }}" class="inline-form" onsubmit="return confirm('确认删除？')">
+                    <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search) }}
+{% endblock %}

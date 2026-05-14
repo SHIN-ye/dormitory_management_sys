@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>控制台</h1>
+
+{% if is_student %}
+
+{% if my_accommodation %}
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-num">{{ my_accommodation.room.building.name }}</div>
+        <div class="stat-label">宿舍楼</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ my_accommodation.room.room_number }}</div>
+        <div class="stat-label">房间号</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ my_accommodation.check_in_date }}</div>
+        <div class="stat-label">入住日期</div>
+    </div>
+</div>
+
+{% if roommates %}
+<h2 style="margin-top:24px;">室友</h2>
+<table>
+    <thead>
+        <tr><th>学号</th><th>姓名</th><th>专业</th></tr>
+    </thead>
+    <tbody>
+    {% for rm in roommates %}
+        <tr>
+            <td>{{ rm.student.sno }}</td>
+            <td>{{ rm.student.name }}</td>
+            <td>{{ rm.student.major or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% else %}
+<p style="color:#999;margin:20px 0;">暂无入住记录</p>
+{% endif %}
+
+{% if my_repairs %}
+<h2 style="margin-top:24px;">我的报修</h2>
+<table>
+    <thead>
+        <tr><th>描述</th><th>状态</th><th>报修日期</th></tr>
+    </thead>
+    <tbody>
+    {% for r in my_repairs %}
+        <tr>
+            <td>{{ r.description }}</td>
+            <td><span class="tag tag-{{ 'warning' if r.status == '待处理' else 'info' if r.status == '处理中' else 'success' }}">{{ r.status }}</span></td>
+            <td>{{ r.report_date }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if my_fees %}
+<h2 style="margin-top:24px;">我的费用</h2>
+<table>
+    <thead>
+        <tr><th>类型</th><th>金额</th><th>状态</th><th>截止日期</th></tr>
+    </thead>
+    <tbody>
+    {% for f in my_fees %}
+        <tr>
+            <td>{{ f.fee_type }}</td>
+            <td>{{ f.amount }} 元</td>
+            <td><span class="tag tag-{{ 'danger' if f.status == '未缴' else 'success' }}">{{ f.status }}</span></td>
+            <td>{{ f.due_date or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% else %}
+{# 管理员/宿管端 #}
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.buildings }}</div>
+        <div class="stat-label">宿舍楼</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.rooms }}</div>
+        <div class="stat-label">房间总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.students }}</div>
+        <div class="stat-label">学生总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.occupied }}</div>
+        <div class="stat-label">当前入住</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.pending_repairs }}</div>
+        <div class="stat-label">待处理报修</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.unpaid_fees }}</div>
+        <div class="stat-label">未缴费</div>
+    </div>
+</div>
+
+{% if buildings and occupancy_rates %}
+<h2 style="margin-top:32px;">宿舍楼入住率</h2>
+<table>
+    <thead>
+        <tr><th>宿舍楼</th><th>入住率</th></tr>
+    </thead>
+    <tbody>
+    {% for b in buildings %}
+        <tr>
+            <td>{{ b.name }}</td>
+            <td>{{ "%.1f"|format(occupancy_rates[b.id]) }}%</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if recent_repairs %}
+<h2 style="margin-top:32px;">最近报修</h2>
+<table>
+    <thead>
+        <tr>
+            <th>学生</th>
+            <th>房间</th>
+            <th>描述</th>
+            <th>状态</th>
+            <th>日期</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in recent_repairs %}
+        <tr>
+            <td>{{ r.student.name }}</td>
+            <td>{{ r.room.building.name }} {{ r.room.room_number }}</td>
+            <td>{{ r.description }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.report_date }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+{% if announcements %}
+<h2 style="margin-top:32px;">最新公告</h2>
+<table>
+    <thead>
+        <tr>
+            <th>标题</th>
+            <th>内容</th>
+            <th>发布时间</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for a in announcements %}
+        <tr>
+            <td>{{ a.title }}</td>
+            <td>{{ a.content[:80] }}{% if a.content|length > 80 %}...{% endif %}</td>
+            <td>{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

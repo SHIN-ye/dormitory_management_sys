@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>公告管理</h1>
+{% if session.role != 'student' %}
+<p class="toolbar">
+    <a href="{{ url_for('announcement_add') }}" class="btn btn-primary">+ 发布公告</a>
+    <a href="{{ url_for('announcement_export', search=search) }}" class="btn">📥 导出Excel</a>
+</p>
+{% endif %}
+<div class="search-bar">
+    <form method="get" action="{{ url_for('announcement_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索标题/内容..." class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search %}<a href="{{ url_for('announcement_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>标题</th>
+            <th>内容</th>
+            <th>发布人</th>
+            <th>发布时间</th>
+            {% if session.role != 'student' %}<th>操作</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for a in announcements %}
+        <tr>
+            <td>{{ a.title }}</td>
+            <td>{{ a.content[:60] }}{% if a.content|length > 60 %}...{% endif %}</td>
+            <td>{{ a.user.username }}</td>
+            <td>{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            {% if session.role != 'student' %}
+            <td class="actions">
+                <a href="{{ url_for('announcement_edit', aid=a.id) }}" class="btn btn-sm">编辑</a>
+                <form method="post" action="{{ url_for('announcement_delete', aid=a.id) }}" class="inline-form" onsubmit="return confirm('确认删除？')">
+                    <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                </form>
+            </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search) }}
+{% endblock %}

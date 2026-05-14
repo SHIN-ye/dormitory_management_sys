@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>批量导入学生</h1>
+
+<div class="form-box" style="margin-bottom:24px;">
+    <h3>上传 Excel 文件</h3>
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>选择 Excel 文件（.xlsx / .xls）</label>
+            <input type="file" name="file" accept=".xlsx,.xls" required class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">开始导入</button>
+        <a href="{{ url_for('student_list') }}" class="btn">返回列表</a>
+    </form>
+</div>
+
+<div style="background:#f5f5f5;padding:16px;border-radius:8px;">
+    <h4>Excel 表头格式要求</h4>
+    <p style="color:#666;margin-bottom:8px;">第一行为表头，至少包含 <strong>学号</strong> 和 <strong>姓名</strong> 列。支持以下列名：</p>
+    <table>
+        <thead><tr><th>列名</th><th>说明</th><th>必填</th></tr></thead>
+        <tbody>
+            <tr><td>学号</td><td>学生学号，不可重复</td><td><span class="tag tag-danger">必填</span></td></tr>
+            <tr><td>姓名</td><td>学生姓名</td><td><span class="tag tag-danger">必填</span></td></tr>
+            <tr><td>性别</td><td>男 / 女</td><td>选填</td></tr>
+            <tr><td>出生日期</td><td>格式：YYYY-MM-DD 或 Excel 日期格式</td><td>选填</td></tr>
+            <tr><td>手机</td><td>手机号码</td><td>选填</td></tr>
+            <tr><td>专业</td><td>专业名称</td><td>选填</td></tr>
+            <tr><td>班级</td><td>班级名称</td><td>选填</td></tr>
+        </tbody>
+    </table>
+</div>
+
+{% if results is not none %}
+<div style="margin-top:24px;">
+    <h3>导入结果</h3>
+    <div style="display:flex;gap:24px;margin-bottom:16px;">
+        <div class="stat-item">
+            <div class="stat-num" style="color:#52c41a;">{{ results.success }}</div>
+            <div>成功导入</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num" style="color:#ff4d4f;">{{ results.fail }}</div>
+            <div>导入失败</div>
+        </div>
+    </div>
+    {% if results.errors %}
+    <details>
+        <summary style="cursor:pointer;color:#ff4d4f;">错误详情（{{ results.errors|length }} 条）</summary>
+        <ul style="margin-top:8px;">
+            {% for err in results.errors %}
+            <li style="color:#ff4d4f;">{{ err }}</li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

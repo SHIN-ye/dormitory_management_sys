@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>我的报修</h1>
+
+<h2>提交新报修</h2>
+<div class="form-box">
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>房间</label>
+            <select name="room_id" required class="form-control">
+                <option value="">-- 请选择 --</option>
+                {% for r in my_rooms %}
+                <option value="{{ r.id }}">{{ r.building.name }} {{ r.room_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>报修描述</label>
+            <textarea name="description" required class="form-control" rows="3" placeholder="请描述需要维修的内容"></textarea>
+        </div>
+        <div class="form-group">
+            <label>现场照片/视频</label>
+            <input type="file" name="image" accept="image/*,video/*" class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">提交报修</button>
+        </div>
+    </form>
+</div>
+
+<h2 style="margin-top:32px;">报修记录</h2>
+<table>
+    <thead>
+        <tr>
+            <th>房间</th>
+            <th>描述</th>
+            <th>现场照片</th>
+            <th>状态</th>
+            <th>报修日期</th>
+            <th>修复日期</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in repairs %}
+        <tr>
+            <td>{{ r.room.building.name }} {{ r.room.room_number }}</td>
+            <td>{{ r.description }}</td>
+            <td>
+                {% if r.image %}
+                {% set ext = r.image.rsplit('.', 1)[1].lower() %}
+                {% if ext in ('mp4', 'webm', 'avi', 'mov') %}
+                <video controls width="120"><source src="{{ url_for('uploaded_file', filename=r.image) }}" type="video/{{ ext }}"></video>
+                {% else %}
+                <a href="{{ url_for('uploaded_file', filename=r.image) }}" target="_blank">
+                    <img src="{{ url_for('uploaded_file', filename=r.image) }}" class="repair-thumb" alt="现场照片">
+                </a>
+                {% endif %}
+                {% else %}-{% endif %}
+            </td>
+            <td><span class="tag tag-{{ 'warning' if r.status == '待处理' else 'info' if r.status == '处理中' else 'success' if r.status == '已完成' else 'default' }}">{{ r.status }}</span></td>
+            <td>{{ r.report_date }}</td>
+            <td>{{ r.fix_date or '-' }}</td>
+            <td class="actions">
+                {% if r.status == '待处理' %}
+                <form method="post" action="{{ url_for('my_repair_cancel', rid=r.id) }}" class="inline-form" onsubmit="return confirm('确认撤销该报修？')">
+                    <button type="submit" class="btn btn-warning btn-sm">撤销</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

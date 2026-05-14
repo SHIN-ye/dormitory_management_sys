@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>用户管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('user_add') }}" class="btn btn-primary">+ 添加用户</a>
+    <a href="{{ url_for('user_export', search=search) }}" class="btn">📥 导出Excel</a>
+</p>
+<div class="search-bar">
+    <form method="get" action="{{ url_for('user_list') }}">
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索用户名..." class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search %}<a href="{{ url_for('user_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>用户名</th>
+            <th>角色</th>
+            <th>管辖宿舍楼</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.username }}</td>
+            <td><span class="tag tag-{{ 'warning' if u.role == 'admin' else 'info' if u.role == 'dorm_manager' else 'default' }}">{{ u.role }}</span></td>
+            <td>{{ u.building.name if u.building else '-' }}</td>
+            <td class="actions">
+                <a href="{{ url_for('user_edit', uid=u.id) }}" class="btn btn-sm">编辑</a>
+                {% if u.id != session.user_id %}
+                <form method="post" action="{{ url_for('user_delete', uid=u.id) }}" class="inline-form" onsubmit="return confirm('确认删除用户 {{ u.username }}？')">
+                    <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search) }}
+{% endblock %}

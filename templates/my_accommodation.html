@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>我的住宿</h1>
+
+{% if acc %}
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-num">{{ acc.room.building.name }}</div>
+        <div class="stat-label">宿舍楼</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ acc.room.room_number }}</div>
+        <div class="stat-label">房间号</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ acc.room.room_type }}</div>
+        <div class="stat-label">房间类型</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">¥{{ acc.room.price }}</div>
+        <div class="stat-label">年租金</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num">{{ acc.check_in_date }}</div>
+        <div class="stat-label">入住日期</div>
+    </div>
+</div>
+
+{% if roommates %}
+<h2 style="margin-top:24px;">室友</h2>
+<table>
+    <thead>
+        <tr><th>学号</th><th>姓名</th><th>性别</th><th>专业</th><th>班级</th><th>手机</th></tr>
+    </thead>
+    <tbody>
+    {% for rm in roommates %}
+        <tr>
+            <td>{{ rm.student.sno }}</td>
+            <td>{{ rm.student.name }}</td>
+            <td>{{ rm.student.gender or '-' }}</td>
+            <td>{{ rm.student.major or '-' }}</td>
+            <td>{{ rm.student.class_name or '-' }}</td>
+            <td>{{ rm.student.phone or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#999;margin-top:16px;">暂无室友</p>
+{% endif %}
+
+{% if acc and available_rooms %}
+<div style="margin-top:24px;padding:16px;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;">
+    <h3 style="margin-top:0;">🔄 申请调换宿舍</h3>
+    <form method="post" action="{{ url_for('transfer_request') }}" onsubmit="return confirm('确认提交调换申请？')" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <select name="to_room_id" required style="padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <option value="">-- 选择目标房间 --</option>
+            {% for room in available_rooms %}
+            <option value="{{ room.id }}">{{ room.room_number }} ({{ room.room_type }}, {{ room.capacity - room.occupied }}/{{ room.capacity }}空)</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">📝 申请调换</button>
+    </form>
+</div>
+{% endif %}
+
+{% if acc %}
+<div style="margin-top:24px;">
+    <form method="post" action="{{ url_for('checkout_request') }}" onsubmit="return confirm('确认提交退宿申请？')">
+        <button type="submit" class="btn btn-warning">📝 申请退宿</button>
+    </form>
+</div>
+{% endif %}
+{% else %}
+<p style="color:#999;">暂无入住记录，请联系管理员办理入住。</p>
+{% endif %}
+{% endblock %}

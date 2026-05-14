@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>新增入住</h1>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>学生</label>
+            <select name="student_id" required class="form-control">
+                <option value="">-- 请选择 --</option>
+                {% for s in students %}
+                <option value="{{ s.id }}">{{ s.sno }} {{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>房间</label>
+            <select name="room_id" required class="form-control">
+                <option value="">-- 请选择 --</option>
+                {% for r in rooms %}
+                <option value="{{ r.id }}">{{ r.building.name }} {{ r.room_number }}（已住{{ r.occupied }}/{{ r.capacity }}）</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>入住日期</label>
+            <input type="date" name="check_in_date" required class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{{ url_for('accommodation_list') }}" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>操作日志</h1>
+<p class="toolbar">
+    <a href="{{ url_for('operation_log_export', search=search) }}" class="btn">📥 导出Excel</a>
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>时间</th>
+            <th>操作人</th>
+            <th>操作内容</th>
+            <th>IP 地址</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+        <tr>
+            <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ log.user.username }}（{{ log.user.role }}）</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.ip_address or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination) }}
+{% endblock %}

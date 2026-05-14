@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>房间管理</h1>
+<p class="toolbar">
+    <a href="{{ url_for('room_add') }}" class="btn btn-primary">+ 添加房间</a>
+    <a href="{{ url_for('room_export', search=search, building_id=current_building) }}" class="btn">📥 导出Excel</a>
+</p>
+<div class="search-bar">
+    <form method="get" action="{{ url_for('room_list') }}">
+        <select name="building_id" class="form-control" onchange="this.form.submit()">
+            <option value="">-- 全部宿舍楼 --</option>
+            {% for b in buildings %}
+            <option value="{{ b.id }}" {% if current_building == b.id %}selected{% endif %}>{{ b.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="search" value="{{ search }}" placeholder="搜索房间号..." class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+        {% if search or current_building %}<a href="{{ url_for('room_list') }}" class="btn btn-sm">清除</a>{% endif %}
+    </form>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>宿舍楼</th>
+            <th>房间号</th>
+            <th>类型</th>
+            <th>容量</th>
+            <th>已住</th>
+            <th>价格(元/年)</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in rooms %}
+        <tr>
+            <td>{{ r.building.name }}</td>
+            <td>{{ r.room_number }}</td>
+            <td>{{ r.room_type }}</td>
+            <td>{{ r.capacity }}</td>
+            <td>{{ r.occupied }}</td>
+            <td>{{ r.price }}</td>
+            <td class="actions">
+                <a href="{{ url_for('room_edit', rid=r.id) }}" class="btn btn-sm">编辑</a>
+                <form method="post" action="{{ url_for('room_delete', rid=r.id) }}" class="inline-form" onsubmit="return confirm('确认删除？')">
+                    <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination, search, current_building and 'building_id=' ~ current_building) }}
+{% endblock %}

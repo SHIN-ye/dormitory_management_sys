@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>新增访客登记</h1>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>受访学生</label>
+            <select name="student_id" required class="form-control">
+                <option value="">-- 请选择 --</option>
+                {% for s in students %}
+                <option value="{{ s.id }}">{{ s.sno }} {{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>访客姓名</label>
+            <input type="text" name="visitor_name" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>身份证号</label>
+            <input type="text" name="id_card" required class="form-control" placeholder="18位身份证号" pattern="\d{17}[\dXx]" maxlength="18" title="请输入18位身份证号">
+        </div>
+        <div class="form-group">
+            <label>事由</label>
+            <input type="text" name="reason" class="form-control" placeholder="如：探望">
+        </div>
+        <div class="form-group">
+            <label>来访时间</label>
+            <input type="datetime-local" name="visit_date" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>离开时间</label>
+            <input type="datetime-local" name="leave_date" class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{{ url_for('visitor_list') }}" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

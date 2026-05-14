@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>个人资料</h1>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>学号</label>
+            <input type="text" value="{{ student.sno }}" class="form-control" disabled>
+            <small style="color:#999;">不可修改</small>
+        </div>
+        <div class="form-group">
+            <label>姓名</label>
+            <input type="text" value="{{ student.name }}" class="form-control" disabled>
+            <small style="color:#999;">不可修改</small>
+        </div>
+        <div class="form-group">
+            <label>性别</label>
+            <input type="text" value="{{ student.gender or '-' }}" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+            <label>出生日期</label>
+            <input type="text" value="{{ student.birth or '-' }}" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+            <label>专业</label>
+            <input type="text" value="{{ student.major or '-' }}" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+            <label>班级</label>
+            <input type="text" value="{{ student.class_name or '-' }}" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+            <label>手机号</label>
+            <input type="text" name="phone" value="{{ student.phone or '' }}" class="form-control">
+            <small style="color:#999;">可修改</small>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

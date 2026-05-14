@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{% if building %}编辑宿舍楼{% else %}添加宿舍楼{% endif %}</h1>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>名称</label>
+            <input type="text" name="name" value="{{ building.name if building else '' }}" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>层数</label>
+            <input type="number" name="floors" value="{{ building.floors if building else 6 }}" min="1" max="20" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>地址</label>
+            <input type="text" name="address" value="{{ building.address if building else '' }}" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>管理员</label>
+            <input type="text" name="manager" value="{{ building.manager if building else '' }}" class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{{ url_for('building_list') }}" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

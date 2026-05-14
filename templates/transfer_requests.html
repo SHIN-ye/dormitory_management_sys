@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render %}
+
+{% block content %}
+<h1>宿舍调换</h1>
+<p class="toolbar">
+    <a href="{{ url_for('transfer_request_export') }}" class="btn">📥 导出Excel</a>
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>学生</th>
+            <th>原宿舍楼</th>
+            <th>原房间</th>
+            <th>目标宿舍楼</th>
+            <th>目标房间</th>
+            <th>申请日期</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in requests %}
+        <tr>
+            <td>{{ r.student.name }} ({{ r.student.sno }})</td>
+            <td>{{ r.from_accommodation.room.building.name }}</td>
+            <td>{{ r.from_accommodation.room.room_number }}</td>
+            <td>{{ r.to_room.building.name }}</td>
+            <td>{{ r.to_room.room_number }}</td>
+            <td>{{ r.request_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                {% if r.status == 'pending' %}
+                <span class="tag tag-warning">待审核</span>
+                {% elif r.status == 'approved' %}
+                <span class="tag tag-success">已批准</span>
+                {% else %}
+                <span class="tag tag-default">已拒绝</span>
+                {% endif %}
+            </td>
+            <td class="actions">
+                {% if r.status == 'pending' %}
+                <form method="post" action="{{ url_for('transfer_request_approve', rid=r.id) }}" class="inline-form">
+                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('确认批准调换？')">批准</button>
+                </form>
+                <form method="post" action="{{ url_for('transfer_request_reject', rid=r.id) }}" class="inline-form">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确认拒绝调换？')">拒绝</button>
+                </form>
+                {% else %}
+                <span class="text-muted">{{ r.reviewer.username if r.reviewer else '-' }} · {{ r.review_date.strftime('%m-%d %H:%M') if r.review_date else '' }}</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{{ render(pagination) }}
+{% endblock %}

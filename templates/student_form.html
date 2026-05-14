@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{% if student %}编辑学生{% else %}添加学生{% endif %}</h1>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>学号</label>
+            <input type="text" name="sno" value="{{ student.sno if student else '' }}" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>姓名</label>
+            <input type="text" name="name" value="{{ student.name if student else '' }}" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>性别</label>
+            <select name="gender" class="form-control">
+                <option value="">--</option>
+                <option value="男" {% if student and student.gender == '男' %}selected{% endif %}>男</option>
+                <option value="女" {% if student and student.gender == '女' %}selected{% endif %}>女</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>出生日期</label>
+            <input type="date" name="birth" value="{{ student.birth if student else '' }}" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>手机</label>
+            <input type="text" name="phone" value="{{ student.phone if student else '' }}" class="form-control" pattern="1\d{10}" maxlength="11" title="请输入11位手机号">
+        </div>
+        <div class="form-group">
+            <label>专业</label>
+            <input type="text" name="major" value="{{ student.major if student else '' }}" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>班级</label>
+            <input type="text" name="class_name" value="{{ student.class_name if student else '' }}" class="form-control">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{{ url_for('student_list') }}" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

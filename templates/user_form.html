@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ '编辑用户' if user else '添加用户' }}</h1>
+<div class="form-box">
+    <form method="post">
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" name="username" value="{{ user.username if user else '' }}" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label>密码{{ '（留空则不修改）' if user else '' }}</label>
+            <input type="password" name="password" {{ 'required' if not user else '' }} class="form-control">
+        </div>
+        <div class="form-group">
+            <label>角色</label>
+            <select name="role" required class="form-control" id="roleSelect">
+                <option value="student" {% if user and user.role == 'student' %}selected{% endif %}>学生</option>
+                <option value="dorm_manager" {% if user and user.role == 'dorm_manager' %}selected{% endif %}>宿管员</option>
+                <option value="admin" {% if user and user.role == 'admin' %}selected{% endif %}>系统管理员</option>
+            </select>
+        </div>
+        <div class="form-group" id="buildingGroup" style="display:{% if user and user.role == 'dorm_manager' %}block{% else %}none{% endif %};">
+            <label>管辖宿舍楼</label>
+            <select name="building_id" class="form-control">
+                <option value="">-- 请选择 --</option>
+                {% for b in buildings %}
+                <option value="{{ b.id }}" {% if user and user.building_id == b.id %}selected{% endif %}>{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{{ url_for('user_list') }}" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('roleSelect').addEventListener('change', function() {
+    document.getElementById('buildingGroup').style.display = this.value === 'dorm_manager' ? 'block' : 'none';
+});
+</script>
+{% endblock %}

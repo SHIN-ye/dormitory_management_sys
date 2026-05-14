@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>我的费用</h1>
+<table>
+    <thead>
+        <tr>
+            <th>类型</th>
+            <th>金额</th>
+            <th>状态</th>
+            <th>应缴日期</th>
+            <th>实缴日期</th>
+            <th>房间</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for f in fees %}
+        <tr>
+            <td>{{ f.fee_type }}</td>
+            <td>{{ f.amount }} 元</td>
+            <td><span class="tag tag-{{ 'danger' if f.status == '未缴' else 'success' }}">{{ f.status }}</span></td>
+            <td>{{ f.due_date or '-' }}</td>
+            <td>{{ f.pay_date or '-' }}</td>
+            <td>{{ f.room.building.name }} {{ f.room.room_number }}</td>
+        </tr>
+    {% endfor %}
+    {% if not fees %}
+        <tr><td colspan="6" style="text-align:center;color:#999;">暂无费用记录</td></tr>
+    {% endif %}
+    </tbody>
+</table>
+{% endblock %}
