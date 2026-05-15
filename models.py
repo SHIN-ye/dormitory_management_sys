@@ -30,9 +30,10 @@ class Room(db.Model):
     room_type = db.Column(db.String(16), default="四人间")
     price = db.Column(db.Float, default=1200.0)
 
-    accommodations = db.relationship("Accommodation", backref="room", lazy=True)
-    repairs = db.relationship("Repair", backref="room", lazy=True)
-    fees = db.relationship("Fee", backref="room", lazy=True)
+    accommodations = db.relationship("Accommodation", backref="room", lazy=True, cascade="all, delete-orphan")
+    repairs = db.relationship("Repair", backref="room", lazy=True, cascade="all, delete-orphan")
+    fees = db.relationship("Fee", backref="room", lazy=True, cascade="all, delete-orphan")
+    transfer_requests_to = db.relationship("TransferRequest", back_populates="to_room", lazy=True, cascade="all, delete-orphan")
 
     __table_args__ = (db.UniqueConstraint("building_id", "room_number"),)
 
@@ -50,13 +51,15 @@ class Student(db.Model):
     phone = db.Column(db.String(20))
     major = db.Column(db.String(64))
     class_name = db.Column(db.String(64))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), unique=True, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), unique=True, nullable=True)
 
     user = db.relationship("User", backref="student_profile", uselist=False)
-    accommodations = db.relationship("Accommodation", backref="student", lazy=True)
-    repairs = db.relationship("Repair", backref="student", lazy=True)
-    visitors = db.relationship("Visitor", backref="student", lazy=True)
-    fees = db.relationship("Fee", backref="student", lazy=True)
+    accommodations = db.relationship("Accommodation", backref="student", lazy=True, cascade="all, delete-orphan")
+    repairs = db.relationship("Repair", backref="student", lazy=True, cascade="all, delete-orphan")
+    visitors = db.relationship("Visitor", backref="student", lazy=True, cascade="all, delete-orphan")
+    fees = db.relationship("Fee", backref="student", lazy=True, cascade="all, delete-orphan")
+    checkout_requests = db.relationship("CheckoutRequest", back_populates="student", lazy=True, cascade="all, delete-orphan")
+    transfer_requests = db.relationship("TransferRequest", back_populates="student", lazy=True, cascade="all, delete-orphan")
 
 
 # ============================================================
@@ -70,6 +73,9 @@ class Accommodation(db.Model):
     check_in_date = db.Column(db.Date, nullable=False)
     check_out_date = db.Column(db.Date)
     status = db.Column(db.String(8), default="入住")  # 入住 / 已退宿
+
+    checkout_requests = db.relationship("CheckoutRequest", back_populates="accommodation", lazy=True, cascade="all, delete-orphan")
+    transfer_requests = db.relationship("TransferRequest", back_populates="from_accommodation", lazy=True, cascade="all, delete-orphan")
 
 
 # ============================================================
@@ -129,8 +135,8 @@ class CheckoutRequest(db.Model):
     reviewed_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     review_date = db.Column(db.DateTime, nullable=True)
 
-    student = db.relationship("Student", backref="checkout_requests")
-    accommodation = db.relationship("Accommodation", backref="checkout_requests")
+    student = db.relationship("Student", back_populates="checkout_requests")
+    accommodation = db.relationship("Accommodation", back_populates="checkout_requests")
     reviewer = db.relationship("User")
 
 
@@ -148,9 +154,9 @@ class TransferRequest(db.Model):
     reviewed_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     review_date = db.Column(db.DateTime, nullable=True)
 
-    student = db.relationship("Student", backref="transfer_requests")
-    from_accommodation = db.relationship("Accommodation", foreign_keys=[from_accommodation_id], backref="transfer_requests")
-    to_room = db.relationship("Room")
+    student = db.relationship("Student", back_populates="transfer_requests")
+    from_accommodation = db.relationship("Accommodation", foreign_keys=[from_accommodation_id], back_populates="transfer_requests")
+    to_room = db.relationship("Room", back_populates="transfer_requests_to")
     reviewer = db.relationship("User")
 
 

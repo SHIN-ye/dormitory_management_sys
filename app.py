@@ -1358,6 +1358,16 @@ def user_delete(uid):
         return redirect(url_for("user_list"))
     u = User.query.get_or_404(uid)
     uname, urole = u.username, u.role
+    # 解除学生关联
+    if u.student_profile:
+        u.student_profile.user_id = None
+    # 清除审核人引用
+    CheckoutRequest.query.filter_by(reviewed_by=uid).update({"reviewed_by": None})
+    TransferRequest.query.filter_by(reviewed_by=uid).update({"reviewed_by": None})
+    # 清除该用户的公告和操作日志
+    Announcement.query.filter_by(user_id=uid).delete()
+    OperationLog.query.filter_by(user_id=uid).delete()
+    db.session.flush()
     db.session.delete(u)
     db.session.commit()
     log_operation(f"删除用户「{uname}」({urole})", "user", uid)
