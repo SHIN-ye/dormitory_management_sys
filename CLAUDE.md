@@ -72,7 +72,24 @@ lab2/
 | Announcement | announcement | title, content, created_at, user_id(FK) |
 | OperationLog | operation_log | user_id(FK), action, target_type, target_id, ip_address, created_at |
 
-**关系**：Building 1:N Room（级联），Room 1:N Accommodation/Repair/Fee/TransferRequest(to_room)，Student 1:N Accommodation/Repair/Visitor/Fee/CheckoutRequest/TransferRequest，Accommodation 1:N CheckoutRequest/TransferRequest，User 1:N Announcement/CheckoutRequest(reviewed_by)/TransferRequest(reviewed_by)/OperationLog，User 1:1 Student（可选），User N:1 Building（仅 dorm_manager）
+**关系与级联删除**：
+
+```
+Building ──cascade──> Room ──cascade──> Accommodation ──cascade──> CheckoutRequest
+         (delete-orphan)    (delete-orphan)  (delete-orphan)         TransferRequest
+                            Repairs
+                            Fees
+                            TransferRequest(to_room)
+
+Student ──cascade──> Accommodation / Repair / Visitor / Fee / CheckoutRequest / TransferRequest
+
+User ──路由清理──> Announcement(DELETE) + OperationLog(DELETE) + Student.user_id(SET NULL)
+                 + CheckoutRequest.reviewed_by(SET NULL) + TransferRequest.reviewed_by(SET NULL)
+```
+
+- Student.user_id FK 使用 `ondelete="SET NULL"`，删除 User 时自动解除学生绑定
+- 删除 User 时路由层先清理公告/日志/审核人引用，再删除用户
+- `back_populates` 双向绑定替代原有 `backref`（Student↔CheckoutRequest、Room↔TransferRequest 等），避免级联冲突
 
 ## 角色权限（3 角色）
 
@@ -116,6 +133,18 @@ python app.py
 | **函数** | `fn_occupancy_rate(building_id)` | 返回宿舍楼入住率百分比 |
 
 SQL 源文件：[db_advanced.sql](db_advanced.sql)
+
+## 确认模态框
+
+所有破坏性操作（删除、退宿、撤销报修、审批）统一使用 CSS 模态确认框替代浏览器 `confirm()`：
+
+- **实现**：[base.html](templates/base.html) 底部 `#confirm-modal` 弹窗 + ~35 行 vanilla JS
+- **样式**：[style.css](static/css/style.css) `.modal-*` 类（居中、半透明遮罩、0.2s 缩放动画）
+- **用法**：在 `<form>` 上加 `data-confirm="提示文本"` 属性，JS 自动拦截 submit 事件弹出模态框
+- **取消方式**：点击遮罩层 / 按 ESC / 点击"取消"按钮
+- **覆盖范围**：删除宿舍楼/房间/学生/用户/公告、退宿、撤销报修、审批退宿/调换（批准+拒绝）
+
+非破坏性操作（缴费、提交申请）保留浏览器 `confirm()` 或无需确认。
 
 ## 报修文件上传
 
@@ -185,6 +214,8 @@ SQL 源文件：[db_advanced.sql](db_advanced.sql)
 - [x] 操作日志（审计追踪，admin 可查看/搜索）
 - [x] Excel 导出（10 列表页，保留搜索/筛选条件）
 - [x] 需求分析文档（含 ER 图和业务规则）
+- [x] 级联删除完整性（Building→Room→Accommodation→Checkout/TransferRequest，Student→全部关联记录，User 路由层清理）
+- [x] 破坏性操作确认模态框（CSS modal 替代浏览器 confirm，含级联后果提示）
 
 ### 待完成（文档类）
 1. **DDL 建表语句** — 从 ORM 反向导出
