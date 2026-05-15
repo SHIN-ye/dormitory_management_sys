@@ -420,3 +420,50 @@ h2 {
     color: #999;
     font-size: 12px;
 }
+
+/* ---- 确认模态框 ---- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 8px;
+    width: 420px;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    padding: 18px 22px;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px 22px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+}
+
+.modal-footer {
+    padding: 12px 22px 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}

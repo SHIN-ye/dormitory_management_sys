@@ -64,7 +64,7 @@
             <td>{{ r.fix_date or '-' }}</td>
             <td class="actions">
                 {% if r.status == '待处理' %}
-                <form method="post" action="{{ url_for('my_repair_cancel', rid=r.id) }}" class="inline-form" onsubmit="return confirm('确认撤销该报修？')">
+                <form method="post" action="{{ url_for('my_repair_cancel', rid=r.id) }}" class="inline-form" data-confirm="确认撤销该报修申请？">
                     <button type="submit" class="btn btn-warning btn-sm">撤销</button>
                 </form>
                 {% endif %}

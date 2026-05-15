@@ -42,7 +42,7 @@
             <td><span class="tag tag-{{ 'success' if a.status == '入住' else 'default' }}">{{ a.status }}</span></td>
             <td class="actions">
                 {% if a.status == '入住' %}
-                <form method="post" action="{{ url_for('accommodation_checkout', aid=a.id) }}" class="inline-form" onsubmit="return confirm('确认退宿？')">
+                <form method="post" action="{{ url_for('accommodation_checkout', aid=a.id) }}" class="inline-form" data-confirm="确认为学生「{{ a.student.name }}」办理退宿？退宿后将自动扣减房间已住人数，此操作不可恢复。">
                     <button type="submit" class="btn btn-warning btn-sm">退宿</button>
                 </form>
                 {% endif %}

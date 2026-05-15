@@ -59,5 +59,55 @@
     {% else %}
     {% block fullpage %}{% endblock %}
     {% endif %}
+
+    <div id="confirm-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">操作确认</div>
+            <div class="modal-body" id="confirm-message"></div>
+            <div class="modal-footer">
+                <button class="btn" id="confirm-cancel">取消</button>
+                <button class="btn btn-danger" id="confirm-ok">确认</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function() {
+        var pendingForm = null;
+        var overlay = document.getElementById('confirm-modal');
+        var msgEl = document.getElementById('confirm-message');
+        var okBtn = document.getElementById('confirm-ok');
+
+        document.querySelectorAll('form[data-confirm]').forEach(function(f) {
+            f.addEventListener('submit', function(e) {
+                if (pendingForm) return;
+                e.preventDefault();
+                pendingForm = f;
+                msgEl.textContent = f.getAttribute('data-confirm');
+                overlay.style.display = 'flex';
+            });
+        });
+
+        okBtn.addEventListener('click', function() {
+            if (pendingForm) {
+                pendingForm.submit();
+                pendingForm = null;
+                overlay.style.display = 'none';
+            }
+        });
+
+        function close() {
+            pendingForm = null;
+            overlay.style.display = 'none';
+        }
+
+        document.getElementById('confirm-cancel').addEventListener('click', close);
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) close();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') close();
+        });
+    })();
+    </script>
 </body>
 </html>

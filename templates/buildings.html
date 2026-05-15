@@ -33,7 +33,7 @@
             <td>{{ b.manager or '-' }}</td>
             <td class="actions">
                 <a href="{{ url_for('building_edit', bid=b.id) }}" class="btn btn-sm">编辑</a>
-                <form method="post" action="{{ url_for('building_delete', bid=b.id) }}" class="inline-form" onsubmit="return confirm('删除宿舍楼将同时删除其下所有房间，确认？')">
+                <form method="post" action="{{ url_for('building_delete', bid=b.id) }}" class="inline-form" data-confirm="删除宿舍楼「{{ b.name }}」将同时删除其下所有房间、入住记录、报修和费用数据，此操作不可恢复。">
                     <button type="submit" class="btn btn-danger btn-sm">删除</button>
                 </form>
             </td>

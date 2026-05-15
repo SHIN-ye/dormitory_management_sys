@@ -36,7 +36,7 @@
             {% if session.role != 'student' %}
             <td class="actions">
                 <a href="{{ url_for('announcement_edit', aid=a.id) }}" class="btn btn-sm">编辑</a>
-                <form method="post" action="{{ url_for('announcement_delete', aid=a.id) }}" class="inline-form" onsubmit="return confirm('确认删除？')">
+                <form method="post" action="{{ url_for('announcement_delete', aid=a.id) }}" class="inline-form" data-confirm="确认删除公告「{{ a.title }}」？此操作不可恢复。">
                     <button type="submit" class="btn btn-danger btn-sm">删除</button>
                 </form>
             </td>

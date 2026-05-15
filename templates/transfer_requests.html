@@ -39,11 +39,11 @@
             </td>
             <td class="actions">
                 {% if r.status == 'pending' %}
-                <form method="post" action="{{ url_for('transfer_request_approve', rid=r.id) }}" class="inline-form">
-                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('确认批准调换？')">批准</button>
+                <form method="post" action="{{ url_for('transfer_request_approve', rid=r.id) }}" class="inline-form" data-confirm="确认批准学生「{{ r.student.name }}」的调换申请？批准后将自动迁移住宿记录并更新两间房人数。">
+                    <button type="submit" class="btn btn-success btn-sm">批准</button>
                 </form>
-                <form method="post" action="{{ url_for('transfer_request_reject', rid=r.id) }}" class="inline-form">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确认拒绝调换？')">拒绝</button>
+                <form method="post" action="{{ url_for('transfer_request_reject', rid=r.id) }}" class="inline-form" data-confirm="确认拒绝学生「{{ r.student.name }}」的调换申请？">
+                    <button type="submit" class="btn btn-danger btn-sm">拒绝</button>
                 </form>
                 {% else %}
                 <span class="text-muted">{{ r.reviewer.username if r.reviewer else '-' }} · {{ r.review_date.strftime('%m-%d %H:%M') if r.review_date else '' }}</span>
