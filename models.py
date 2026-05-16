@@ -14,7 +14,8 @@ class Building(db.Model):
     address = db.Column(db.String(128))
     manager = db.Column(db.String(32))
 
-    rooms = db.relationship("Room", backref="building", lazy=True, cascade="all, delete-orphan")
+    rooms = db.relationship("Room", back_populates="building", lazy=True, cascade="all, delete-orphan")
+    managers = db.relationship("User", back_populates="building")
 
 
 # ============================================================
@@ -30,9 +31,10 @@ class Room(db.Model):
     room_type = db.Column(db.String(16), default="四人间")
     price = db.Column(db.Float, default=1200.0)
 
-    accommodations = db.relationship("Accommodation", backref="room", lazy=True, cascade="all, delete-orphan")
-    repairs = db.relationship("Repair", backref="room", lazy=True, cascade="all, delete-orphan")
-    fees = db.relationship("Fee", backref="room", lazy=True, cascade="all, delete-orphan")
+    building = db.relationship("Building", back_populates="rooms")
+    accommodations = db.relationship("Accommodation", back_populates="room", lazy=True, cascade="all, delete-orphan")
+    repairs = db.relationship("Repair", back_populates="room", lazy=True, cascade="all, delete-orphan")
+    fees = db.relationship("Fee", back_populates="room", lazy=True, cascade="all, delete-orphan")
     transfer_requests_to = db.relationship("TransferRequest", back_populates="to_room", lazy=True, cascade="all, delete-orphan")
 
     __table_args__ = (db.UniqueConstraint("building_id", "room_number"),)
@@ -53,11 +55,11 @@ class Student(db.Model):
     class_name = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), unique=True, nullable=True)
 
-    user = db.relationship("User", backref="student_profile", uselist=False)
-    accommodations = db.relationship("Accommodation", backref="student", lazy=True, cascade="all, delete-orphan")
-    repairs = db.relationship("Repair", backref="student", lazy=True, cascade="all, delete-orphan")
-    visitors = db.relationship("Visitor", backref="student", lazy=True, cascade="all, delete-orphan")
-    fees = db.relationship("Fee", backref="student", lazy=True, cascade="all, delete-orphan")
+    user = db.relationship("User", back_populates="student_profile", uselist=False)
+    accommodations = db.relationship("Accommodation", back_populates="student", lazy=True, cascade="all, delete-orphan")
+    repairs = db.relationship("Repair", back_populates="student", lazy=True, cascade="all, delete-orphan")
+    visitors = db.relationship("Visitor", back_populates="student", lazy=True, cascade="all, delete-orphan")
+    fees = db.relationship("Fee", back_populates="student", lazy=True, cascade="all, delete-orphan")
     checkout_requests = db.relationship("CheckoutRequest", back_populates="student", lazy=True, cascade="all, delete-orphan")
     transfer_requests = db.relationship("TransferRequest", back_populates="student", lazy=True, cascade="all, delete-orphan")
 
@@ -72,8 +74,10 @@ class Accommodation(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"), nullable=False)
     check_in_date = db.Column(db.Date, nullable=False)
     check_out_date = db.Column(db.Date)
-    status = db.Column(db.String(8), default="入住")  # 入住 / 已退宿
+    status = db.Column(db.String(8), default="入住")
 
+    student = db.relationship("Student", back_populates="accommodations")
+    room = db.relationship("Room", back_populates="accommodations")
     checkout_requests = db.relationship("CheckoutRequest", back_populates="accommodation", lazy=True, cascade="all, delete-orphan")
     transfer_requests = db.relationship("TransferRequest", back_populates="from_accommodation", lazy=True, cascade="all, delete-orphan")
 
@@ -87,10 +91,13 @@ class Repair(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"), nullable=False)
     description = db.Column(db.String(256), nullable=False)
-    image = db.Column(db.String(128))  # 现场照片文件名
-    status = db.Column(db.String(8), default="待处理")  # 待处理 / 处理中 / 已完成
+    image = db.Column(db.String(128))
+    status = db.Column(db.String(8), default="待处理")
     report_date = db.Column(db.Date, nullable=False)
     fix_date = db.Column(db.Date)
+
+    student = db.relationship("Student", back_populates="repairs")
+    room = db.relationship("Room", back_populates="repairs")
 
 
 # ============================================================
@@ -106,6 +113,8 @@ class Visitor(db.Model):
     visit_date = db.Column(db.DateTime, nullable=False)
     leave_date = db.Column(db.DateTime)
 
+    student = db.relationship("Student", back_populates="visitors")
+
 
 # ============================================================
 # 费用记录
@@ -115,11 +124,14 @@ class Fee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"), nullable=False)
-    fee_type = db.Column(db.String(16), nullable=False)  # 住宿费 / 水电费 / 维修费
+    fee_type = db.Column(db.String(16), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(8), default="未缴")  # 未缴 / 已缴
+    status = db.Column(db.String(8), default="未缴")
     due_date = db.Column(db.Date)
     pay_date = db.Column(db.Date)
+
+    student = db.relationship("Student", back_populates="fees")
+    room = db.relationship("Room", back_populates="fees")
 
 
 # ============================================================
@@ -130,7 +142,7 @@ class CheckoutRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     accommodation_id = db.Column(db.Integer, db.ForeignKey("accommodation.id"), nullable=False)
-    status = db.Column(db.String(16), default="pending")  # pending / approved / rejected
+    status = db.Column(db.String(16), default="pending")
     request_date = db.Column(db.DateTime, default=db.func.current_timestamp())
     reviewed_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     review_date = db.Column(db.DateTime, nullable=True)
@@ -149,7 +161,7 @@ class TransferRequest(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     from_accommodation_id = db.Column(db.Integer, db.ForeignKey("accommodation.id"), nullable=False)
     to_room_id = db.Column(db.Integer, db.ForeignKey("room.id"), nullable=False)
-    status = db.Column(db.String(16), default="pending")  # pending / approved / rejected
+    status = db.Column(db.String(16), default="pending")
     request_date = db.Column(db.DateTime, default=db.func.current_timestamp())
     reviewed_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     review_date = db.Column(db.DateTime, nullable=True)
@@ -171,6 +183,8 @@ class Announcement(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
+    user = db.relationship("User", back_populates="announcements")
+
 
 # ============================================================
 # 操作日志
@@ -185,7 +199,7 @@ class OperationLog(db.Model):
     ip_address = db.Column(db.String(45))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    user = db.relationship("User", backref="operation_logs")
+    user = db.relationship("User", back_populates="operation_logs")
 
 
 # ============================================================
@@ -196,8 +210,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(16), default="student")  # admin / dorm_manager / student
+    role = db.Column(db.String(16), default="student")
     building_id = db.Column(db.Integer, db.ForeignKey("building.id"), nullable=True)
 
-    building = db.relationship("Building", backref="managers")
-    announcements = db.relationship("Announcement", backref="user", lazy=True)
+    building = db.relationship("Building", back_populates="managers")
+    student_profile = db.relationship("Student", back_populates="user", uselist=False)
+    announcements = db.relationship("Announcement", back_populates="user", lazy=True)
+    operation_logs = db.relationship("OperationLog", back_populates="user", lazy=True)
