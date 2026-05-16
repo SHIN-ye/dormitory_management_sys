@@ -4,7 +4,7 @@
 {% block content %}
 <h1>操作日志</h1>
 <p class="toolbar">
-    <a href="{{ url_for('operation_log_export', search=search) }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('admin.operation_log_export', search=search) }}" class="btn">📥 导出Excel</a>
 </p>
 <table>
     <thead>

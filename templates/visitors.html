@@ -4,14 +4,14 @@
 {% block content %}
 <h1>访客管理</h1>
 <p class="toolbar">
-    <a href="{{ url_for('visitor_add') }}" class="btn btn-primary">+ 新增访客登记</a>
-    <a href="{{ url_for('visitor_export', search=search) }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('services.visitor_add') }}" class="btn btn-primary">+ 新增访客登记</a>
+    <a href="{{ url_for('services.visitor_export', search=search) }}" class="btn">📥 导出Excel</a>
 </p>
 <div class="search-bar">
-    <form method="get" action="{{ url_for('visitor_list') }}">
+    <form method="get" action="{{ url_for('services.visitor_list') }}">
         <input type="text" name="search" value="{{ search }}" placeholder="搜索访客姓名/身份证号/受访学生..." class="form-control">
         <button type="submit" class="btn btn-primary btn-sm">搜索</button>
-        {% if search %}<a href="{{ url_for('visitor_list') }}" class="btn btn-sm">清除</a>{% endif %}
+        {% if search %}<a href="{{ url_for('services.visitor_list') }}" class="btn btn-sm">清除</a>{% endif %}
     </form>
 </div>
 <table>

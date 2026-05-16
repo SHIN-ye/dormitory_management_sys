@@ -53,7 +53,7 @@
 {% if acc and available_rooms %}
 <div style="margin-top:24px;padding:16px;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;">
     <h3 style="margin-top:0;">🔄 申请调换宿舍</h3>
-    <form method="post" action="{{ url_for('transfer_request') }}" onsubmit="return confirm('确认提交调换申请？')" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <form method="post" action="{{ url_for('housing.transfer_request') }}" onsubmit="return confirm('确认提交调换申请？')" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <select name="to_room_id" required style="padding:8px;border:1px solid #ccc;border-radius:4px;">
             <option value="">-- 选择目标房间 --</option>
             {% for room in available_rooms %}
@@ -67,7 +67,7 @@
 
 {% if acc %}
 <div style="margin-top:24px;">
-    <form method="post" action="{{ url_for('checkout_request') }}" onsubmit="return confirm('确认提交退宿申请？')">
+    <form method="post" action="{{ url_for('housing.checkout_request') }}" onsubmit="return confirm('确认提交退宿申请？')">
         <button type="submit" class="btn btn-warning">📝 申请退宿</button>
     </form>
 </div>

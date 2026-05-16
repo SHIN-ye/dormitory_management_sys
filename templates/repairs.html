@@ -4,11 +4,11 @@
 {% block content %}
 <h1>报修管理</h1>
 <p class="toolbar">
-    <a href="{{ url_for('repair_add') }}" class="btn btn-primary">+ 新增报修</a>
-    <a href="{{ url_for('repair_export', search=search, status=status_filter) }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('services.repair_add') }}" class="btn btn-primary">+ 新增报修</a>
+    <a href="{{ url_for('services.repair_export', search=search, status=status_filter) }}" class="btn">📥 导出Excel</a>
 </p>
 <div class="search-bar">
-    <form method="get" action="{{ url_for('repair_list') }}">
+    <form method="get" action="{{ url_for('services.repair_list') }}">
         <input type="text" name="search" value="{{ search }}" placeholder="搜索描述/学生姓名..." class="form-control">
         <select name="status" class="form-control">
             <option value="">-- 全部状态 --</option>
@@ -18,7 +18,7 @@
             <option value="已撤销" {% if status_filter == '已撤销' %}selected{% endif %}>已撤销</option>
         </select>
         <button type="submit" class="btn btn-primary btn-sm">搜索</button>
-        {% if search or status_filter %}<a href="{{ url_for('repair_list') }}" class="btn btn-sm">清除</a>{% endif %}
+        {% if search or status_filter %}<a href="{{ url_for('services.repair_list') }}" class="btn btn-sm">清除</a>{% endif %}
     </form>
 </div>
 <table>
@@ -46,10 +46,10 @@
                 {% if r.image %}
                 {% set ext = r.image.rsplit('.', 1)[1].lower() %}
                 {% if ext in ('mp4', 'webm', 'avi', 'mov') %}
-                <video controls width="120"><source src="{{ url_for('uploaded_file', filename=r.image) }}" type="video/{{ ext }}"></video>
+                <video controls width="120"><source src="{{ url_for('main.uploaded_file', filename=r.image) }}" type="video/{{ ext }}"></video>
                 {% else %}
-                <a href="{{ url_for('uploaded_file', filename=r.image) }}" target="_blank">
-                    <img src="{{ url_for('uploaded_file', filename=r.image) }}" class="repair-thumb" alt="现场照片">
+                <a href="{{ url_for('main.uploaded_file', filename=r.image) }}" target="_blank">
+                    <img src="{{ url_for('main.uploaded_file', filename=r.image) }}" class="repair-thumb" alt="现场照片">
                 </a>
                 {% endif %}
                 {% else %}-{% endif %}
@@ -59,7 +59,7 @@
             <td><span class="tag tag-{{ 'warning' if r.status == '待处理' else 'info' if r.status == '处理中' else 'success' if r.status == '已完成' else 'default' }}">{{ r.status }}</span></td>
             <td class="actions">
                 {% if r.status != '已完成' %}
-                <form method="post" action="{{ url_for('repair_status', rid=r.id) }}" class="inline-form" style="display:flex;gap:4px;">
+                <form method="post" action="{{ url_for('services.repair_status', rid=r.id) }}" class="inline-form" style="display:flex;gap:4px;">
                     <select name="status" class="form-control" style="width:auto;padding:3px 6px;font-size:12px;">
                         <option value="待处理" {% if r.status == '待处理' %}selected{% endif %}>待处理</option>
                         <option value="处理中">处理中</option>

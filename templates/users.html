@@ -4,14 +4,14 @@
 {% block content %}
 <h1>用户管理</h1>
 <p class="toolbar">
-    <a href="{{ url_for('user_add') }}" class="btn btn-primary">+ 添加用户</a>
-    <a href="{{ url_for('user_export', search=search) }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('admin.user_add') }}" class="btn btn-primary">+ 添加用户</a>
+    <a href="{{ url_for('admin.user_export', search=search) }}" class="btn">📥 导出Excel</a>
 </p>
 <div class="search-bar">
-    <form method="get" action="{{ url_for('user_list') }}">
+    <form method="get" action="{{ url_for('admin.user_list') }}">
         <input type="text" name="search" value="{{ search }}" placeholder="搜索用户名..." class="form-control">
         <button type="submit" class="btn btn-primary btn-sm">搜索</button>
-        {% if search %}<a href="{{ url_for('user_list') }}" class="btn btn-sm">清除</a>{% endif %}
+        {% if search %}<a href="{{ url_for('admin.user_list') }}" class="btn btn-sm">清除</a>{% endif %}
     </form>
 </div>
 <table>
@@ -32,9 +32,9 @@
             <td><span class="tag tag-{{ 'warning' if u.role == 'admin' else 'info' if u.role == 'dorm_manager' else 'default' }}">{{ u.role }}</span></td>
             <td>{{ u.building.name if u.building else '-' }}</td>
             <td class="actions">
-                <a href="{{ url_for('user_edit', uid=u.id) }}" class="btn btn-sm">编辑</a>
+                <a href="{{ url_for('admin.user_edit', uid=u.id) }}" class="btn btn-sm">编辑</a>
                 {% if u.id != session.user_id %}
-                <form method="post" action="{{ url_for('user_delete', uid=u.id) }}" class="inline-form" data-confirm="删除用户「{{ u.username }}」将同时清除其公告和操作日志记录，此操作不可恢复。">
+                <form method="post" action="{{ url_for('admin.user_delete', uid=u.id) }}" class="inline-form" data-confirm="删除用户「{{ u.username }}」将同时清除其公告和操作日志记录，此操作不可恢复。">
                     <button type="submit" class="btn btn-danger btn-sm">删除</button>
                 </form>
                 {% endif %}

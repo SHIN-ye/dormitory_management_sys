@@ -5,15 +5,15 @@
 <h1>公告管理</h1>
 {% if session.role != 'student' %}
 <p class="toolbar">
-    <a href="{{ url_for('announcement_add') }}" class="btn btn-primary">+ 发布公告</a>
-    <a href="{{ url_for('announcement_export', search=search) }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('main.announcement_add') }}" class="btn btn-primary">+ 发布公告</a>
+    <a href="{{ url_for('main.announcement_export', search=search) }}" class="btn">📥 导出Excel</a>
 </p>
 {% endif %}
 <div class="search-bar">
-    <form method="get" action="{{ url_for('announcement_list') }}">
+    <form method="get" action="{{ url_for('main.announcement_list') }}">
         <input type="text" name="search" value="{{ search }}" placeholder="搜索标题/内容..." class="form-control">
         <button type="submit" class="btn btn-primary btn-sm">搜索</button>
-        {% if search %}<a href="{{ url_for('announcement_list') }}" class="btn btn-sm">清除</a>{% endif %}
+        {% if search %}<a href="{{ url_for('main.announcement_list') }}" class="btn btn-sm">清除</a>{% endif %}
     </form>
 </div>
 <table>
@@ -35,8 +35,8 @@
             <td>{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
             {% if session.role != 'student' %}
             <td class="actions">
-                <a href="{{ url_for('announcement_edit', aid=a.id) }}" class="btn btn-sm">编辑</a>
-                <form method="post" action="{{ url_for('announcement_delete', aid=a.id) }}" class="inline-form" data-confirm="确认删除公告「{{ a.title }}」？此操作不可恢复。">
+                <a href="{{ url_for('main.announcement_edit', aid=a.id) }}" class="btn btn-sm">编辑</a>
+                <form method="post" action="{{ url_for('main.announcement_delete', aid=a.id) }}" class="inline-form" data-confirm="确认删除公告「{{ a.title }}」？此操作不可恢复。">
                     <button type="submit" class="btn btn-danger btn-sm">删除</button>
                 </form>
             </td>

@@ -4,7 +4,7 @@
 {% block content %}
 <h1>宿舍调换</h1>
 <p class="toolbar">
-    <a href="{{ url_for('transfer_request_export') }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('housing.transfer_request_export') }}" class="btn">📥 导出Excel</a>
 </p>
 <table>
     <thead>
@@ -39,10 +39,10 @@
             </td>
             <td class="actions">
                 {% if r.status == 'pending' %}
-                <form method="post" action="{{ url_for('transfer_request_approve', rid=r.id) }}" class="inline-form" data-confirm="确认批准学生「{{ r.student.name }}」的调换申请？批准后将自动迁移住宿记录并更新两间房人数。">
+                <form method="post" action="{{ url_for('housing.transfer_request_approve', rid=r.id) }}" class="inline-form" data-confirm="确认批准学生「{{ r.student.name }}」的调换申请？批准后将自动迁移住宿记录并更新两间房人数。">
                     <button type="submit" class="btn btn-success btn-sm">批准</button>
                 </form>
-                <form method="post" action="{{ url_for('transfer_request_reject', rid=r.id) }}" class="inline-form" data-confirm="确认拒绝学生「{{ r.student.name }}」的调换申请？">
+                <form method="post" action="{{ url_for('housing.transfer_request_reject', rid=r.id) }}" class="inline-form" data-confirm="确认拒绝学生「{{ r.student.name }}」的调换申请？">
                     <button type="submit" class="btn btn-danger btn-sm">拒绝</button>
                 </form>
                 {% else %}

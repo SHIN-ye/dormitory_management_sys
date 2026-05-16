@@ -4,11 +4,11 @@
 {% block content %}
 <h1>入住管理</h1>
 <p class="toolbar">
-    <a href="{{ url_for('accommodation_add') }}" class="btn btn-primary">+ 新增入住</a>
-    <a href="{{ url_for('accommodation_export', search=search, status=status_filter) }}" class="btn">📥 导出Excel</a>
+    <a href="{{ url_for('housing.accommodation_add') }}" class="btn btn-primary">+ 新增入住</a>
+    <a href="{{ url_for('housing.accommodation_export', search=search, status=status_filter) }}" class="btn">📥 导出Excel</a>
 </p>
 <div class="search-bar">
-    <form method="get" action="{{ url_for('accommodation_list') }}">
+    <form method="get" action="{{ url_for('housing.accommodation_list') }}">
         <input type="text" name="search" value="{{ search }}" placeholder="搜索学生姓名..." class="form-control">
         <select name="status" class="form-control">
             <option value="">-- 全部状态 --</option>
@@ -16,7 +16,7 @@
             <option value="已退宿" {% if status_filter == '已退宿' %}selected{% endif %}>已退宿</option>
         </select>
         <button type="submit" class="btn btn-primary btn-sm">搜索</button>
-        {% if search or status_filter %}<a href="{{ url_for('accommodation_list') }}" class="btn btn-sm">清除</a>{% endif %}
+        {% if search or status_filter %}<a href="{{ url_for('housing.accommodation_list') }}" class="btn btn-sm">清除</a>{% endif %}
     </form>
 </div>
 <table>
@@ -42,7 +42,7 @@
             <td><span class="tag tag-{{ 'success' if a.status == '入住' else 'default' }}">{{ a.status }}</span></td>
             <td class="actions">
                 {% if a.status == '入住' %}
-                <form method="post" action="{{ url_for('accommodation_checkout', aid=a.id) }}" class="inline-form" data-confirm="确认为学生「{{ a.student.name }}」办理退宿？退宿后将自动扣减房间已住人数，此操作不可恢复。">
+                <form method="post" action="{{ url_for('housing.accommodation_checkout', aid=a.id) }}" class="inline-form" data-confirm="确认为学生「{{ a.student.name }}」办理退宿？退宿后将自动扣减房间已住人数，此操作不可恢复。">
                     <button type="submit" class="btn btn-warning btn-sm">退宿</button>
                 </form>
                 {% endif %}
