@@ -4,6 +4,7 @@ from sqlalchemy import text
 from models import db, Student, Room, Accommodation, CheckoutRequest, TransferRequest
 from utils import login_required, role_required, get_manager_building_id, log_operation, export_excel
 
+# 入住管理、退宿/调换申请+审核
 bp = Blueprint("housing", __name__)
 
 

@@ -5,7 +5,7 @@ from utils import login_required, log_operation
 
 bp = Blueprint("auth", __name__)
 
-
+# 登录/登出/修改密码
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":

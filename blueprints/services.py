@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import db, Student, Room, Repair, Visitor, Fee, Building, Accommodation
 from utils import login_required, role_required, get_manager_building_id, log_operation, export_excel, allowed_file, save_upload_file
 
+# 服务管理（报修、访客、费用）
 bp = Blueprint("services", __name__)
 
 

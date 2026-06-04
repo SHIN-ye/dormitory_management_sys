@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash
 from models import db, User, Building, Announcement, OperationLog, CheckoutRequest, TransferRequest
 from utils import role_required, log_operation, export_excel
 
+# 用户管理, 操作日志
 bp = Blueprint("admin", __name__)
 
 

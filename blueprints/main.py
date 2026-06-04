@@ -9,7 +9,7 @@ from utils import login_required, role_required, get_manager_building_id, log_op
 
 bp = Blueprint("main", __name__)
 
-
+# 首页仪表盘、公告CRUD、学生门户（我的住宿/报修/费用/访客/个人信息）、文件上传访问
 @bp.route("/")
 @login_required
 def index():

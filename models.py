@@ -6,15 +6,15 @@ db = SQLAlchemy()
 # ============================================================
 # 宿舍楼
 # ============================================================
-class Building(db.Model):
+class Building(db.Model): # 定义宿舍楼模型, 继承db.Model
     __tablename__ = "building"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True, nullable=False)
-    floors = db.Column(db.Integer, default=6)
+    floors = db.Column(db.Integer, default=6) # 默认6层
     address = db.Column(db.String(128))
     manager = db.Column(db.String(32))
 
-    rooms = db.relationship("Room", back_populates="building", lazy=True, cascade="all, delete-orphan")
+    rooms = db.relationship("Room", back_populates="building", lazy=True, cascade="all, delete-orphan") # 级联删除 lazy = ture 访问时才触发sql查询
     managers = db.relationship("User", back_populates="building")
 
 
@@ -27,9 +27,9 @@ class Room(db.Model):
     room_number = db.Column(db.String(16), nullable=False)
     building_id = db.Column(db.Integer, db.ForeignKey("building.id"), nullable=False)
     capacity = db.Column(db.Integer, default=4)
-    occupied = db.Column(db.Integer, default=0)
+    occupied = db.Column(db.Integer, default=0) # 已入驻人数
     room_type = db.Column(db.String(16), default="四人间")
-    price = db.Column(db.Float, default=1200.0)
+    price = db.Column(db.Float, default=1200.0) # 住宿费
 
     building = db.relationship("Building", back_populates="rooms")
     accommodations = db.relationship("Accommodation", back_populates="room", lazy=True, cascade="all, delete-orphan")
@@ -90,11 +90,11 @@ class Repair(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"), nullable=False)
-    description = db.Column(db.String(256), nullable=False)
+    description = db.Column(db.String(256), nullable=False) #问题描述
     image = db.Column(db.String(128))
     status = db.Column(db.String(8), default="待处理")
     report_date = db.Column(db.Date, nullable=False)
-    fix_date = db.Column(db.Date)
+    fix_date = db.Column(db.Date) # 触发器自动写入当前日期
 
     student = db.relationship("Student", back_populates="repairs")
     room = db.relationship("Room", back_populates="repairs")
@@ -124,7 +124,7 @@ class Fee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"), nullable=False)
-    fee_type = db.Column(db.String(16), nullable=False)
+    fee_type = db.Column(db.String(16), nullable=False) # 费用类型
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(8), default="未缴")
     due_date = db.Column(db.Date)
@@ -149,7 +149,7 @@ class CheckoutRequest(db.Model):
 
     student = db.relationship("Student", back_populates="checkout_requests")
     accommodation = db.relationship("Accommodation", back_populates="checkout_requests")
-    reviewer = db.relationship("User")
+    reviewer = db.relationship("User") # 单向多对一关系
 
 
 # ============================================================
@@ -197,7 +197,7 @@ class OperationLog(db.Model):
     target_type = db.Column(db.String(32))
     target_id = db.Column(db.Integer)
     ip_address = db.Column(db.String(45))
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp()) # 默认数据库当前时间戳
 
     user = db.relationship("User", back_populates="operation_logs")
 

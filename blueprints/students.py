@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Student
 from utils import role_required, log_operation, export_excel
 
+# 学生CRUD、批量导入（Excel）
 bp = Blueprint("students", __name__)
 
 

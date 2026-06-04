@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Building, Room
 from utils import role_required, log_operation, export_excel
 
+# 宿舍楼CRUD、房间CRUD
 bp = Blueprint("buildings", __name__)
 
 
