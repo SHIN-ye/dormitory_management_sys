@@ -2,7 +2,8 @@ import re
 from datetime import date, datetime
 import openpyxl
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Student
+from werkzeug.security import generate_password_hash
+from models import db, Student, User
 from utils import role_required, log_operation, export_excel
 
 # 学生CRUD、批量导入（Excel）
@@ -104,6 +105,48 @@ def student_delete(sid):
     return redirect(url_for("students.student_list"))
 
 
+@bp.route("/students/generate-accounts", methods=["POST"])
+@role_required("admin")
+def generate_accounts():
+    """为所有未绑定登录账号的学生批量生成初始账号
+    默认用户名 = 学号，默认密码 = 学号（首次登录后可修改）
+    """
+    students_without_user = Student.query.filter(Student.user_id.is_(None)).all()
+    if not students_without_user:
+        flash("所有学生都已绑定登录账号", "info")
+        return redirect(url_for("students.student_list"))
+
+    created = 0
+    skipped = 0
+    errors = []
+    for s in students_without_user:
+        # 检查学号是否已被占用为用户名
+        existing = User.query.filter_by(username=s.sno).first()
+        if existing:
+            skipped += 1
+            errors.append(f"{s.sno} {s.name}：用户名已存在")
+            continue
+        u = User(
+            username=s.sno,
+            password=generate_password_hash(s.sno),
+            role="student",
+        )
+        db.session.add(u)
+        db.session.flush()
+        s.user_id = u.id
+        created += 1
+
+    db.session.commit()
+    log_operation(f"批量生成学生账号（{created}成功 {skipped}跳过 {len(errors)}错误）", "student")
+    if created:
+        flash(f"已为 {created} 名学生生成登录账号（用户名=学号，密码=学号），请提醒学生登录后修改密码", "success")
+    if skipped:
+        flash(f"{skipped} 名学生跳过（用户名已存在）", "warning")
+    for err in errors:
+        flash(f"跳过: {err}", "info")
+    return redirect(url_for("students.student_list"))
+
+
 @bp.route("/students/import", methods=["GET", "POST"])
 @role_required("admin")
 def student_import():
@@ -200,6 +243,7 @@ def student_import():
                             except ValueError:
                                 pass
 
+            savepoint = db.session.begin_nested()
             try:
                 s = Student(
                     sno=sno, name=name, gender=gender, birth=birth,
@@ -208,9 +252,9 @@ def student_import():
                 db.session.add(s)
                 db.session.flush()
             except Exception as e:
+                savepoint.rollback()
                 fail += 1
                 errors.append(f"第{row_idx}行: 数据库错误 - {e}")
-                db.session.rollback()
                 continue
 
             success += 1

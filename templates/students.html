@@ -7,6 +7,9 @@
     <a href="{{ url_for('students.student_add') }}" class="btn btn-primary">+ 添加学生</a>
     <a href="{{ url_for('students.student_import') }}" class="btn">📥 批量导入</a>
     <a href="{{ url_for('students.student_export', search=search) }}" class="btn">📥 导出Excel</a>
+    <form method="post" action="{{ url_for('students.generate_accounts') }}" style="display:inline" data-confirm="将为所有未绑定账号的学生创建登录账号&#10;用户名=学号，初始密码=学号&#10;首次登录后可自行修改密码">
+        <button type="submit" class="btn">🔑 生成初始账号</button>
+    </form>
 </p>
 <div class="search-bar">
     <form method="get" action="{{ url_for('students.student_list') }}">
@@ -25,6 +28,7 @@
             <th>手机</th>
             <th>专业</th>
             <th>班级</th>
+            <th>账号</th>
             <th>操作</th>
         </tr>
     </thead>
@@ -38,6 +42,13 @@
             <td>{{ s.phone or '-' }}</td>
             <td>{{ s.major or '-' }}</td>
             <td>{{ s.class_name or '-' }}</td>
+            <td>
+                {% if s.user_id %}
+                <span style="color:#2e7d32" title="已绑定登录账号">✔ 已绑定</span>
+                {% else %}
+                <span style="color:#c62828" title="暂无登录账号">✘ 无账号</span>
+                {% endif %}
+            </td>
             <td class="actions">
                 <a href="{{ url_for('students.student_edit', sid=s.id) }}" class="btn btn-sm">编辑</a>
                 <form method="post" action="{{ url_for('students.student_delete', sid=s.id) }}" class="inline-form" data-confirm="删除学生「{{ s.name }}」({{ s.sno }}) 将同时删除其入住记录、报修、访客、费用、退宿/调换申请等所有关联数据，此操作不可恢复。">

@@ -30,6 +30,7 @@ class Room(db.Model):
     occupied = db.Column(db.Integer, default=0) # 已入驻人数
     room_type = db.Column(db.String(16), default="四人间")
     price = db.Column(db.Float, default=1200.0) # 住宿费
+    is_active = db.Column(db.Boolean, default=True) # 房间是否可用（禁用=仓库/维修，非删除）
 
     building = db.relationship("Building", back_populates="rooms")
     accommodations = db.relationship("Accommodation", back_populates="room", lazy=True, cascade="all, delete-orphan")

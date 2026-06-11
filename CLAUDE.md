@@ -60,7 +60,7 @@ lab2/
 | 模型 | 表名 | 关键字段 |
 |---|---|---|
 | Building | building | name(UK), floors, address, manager |
-| Room | room | room_number, building_id(FK,级联), capacity, occupied, room_type, price |
+| Room | room | room_number, building_id(FK,级联), capacity, occupied, room_type, price, is_active(默认True) |
 | Student | student | sno(UK), name, gender, birth, phone, major, class_name, user_id(FK,UK,可空) |
 | Accommodation | accommodation | student_id(FK), room_id(FK), check_in/out_date, status |
 | Repair | repair | student_id(FK), room_id(FK), description, image, status, report/fix_date |
@@ -129,6 +129,7 @@ python app.py
 | **事务** | `sp_room_transfer` | 调换原子操作（锁两间房 → 容量校验 → UPDATE accommodation + 两间房 occupied） |
 | **触发器** | `trg_repair_complete` | 报修"已完成"时自动 set fix_date |
 | **触发器** | `trg_accommodation_checkout` | 退宿时自动 room.occupied - 1 |
+| **触发器** | `trg_accommodation_delete` | 删除入住记录时自动 room.occupied - 1（级联删除学生触发） |
 | **存储过程** | `sp_generate_fees` | 为整栋楼在住学生批量生成费用 |
 | **函数** | `fn_occupancy_rate(building_id)` | 返回宿舍楼入住率百分比 |
 
@@ -181,6 +182,15 @@ SQL 源文件：[db_advanced.sql](db_advanced.sql)
 - 日期解析：支持 Excel 日期格式、`YYYY-MM-DD`、`YYYY/MM/DD`、`YYYY.MM.DD`
 - 逐行错误收集，失败行不影响成功行
 
+## 批量生成学生账号
+
+`/students/generate-accounts` — admin 专属 POST 路由。为所有 `user_id IS NULL` 的学生批量创建登录账号：
+
+- 默认用户名 = 学号，默认密码 = 学号（首次登录后可修改密码）
+- 安全：werkzeug scrypt 哈希存储密码，`Student.user_id` 自动绑定
+- 幂等：已有账号的学生自动跳过
+- 入口：学生列表页工具栏 "🔑 生成初始账号" 按钮（含确认模态框）
+
 ## 密码安全
 
 - werkzeug `generate_password_hash`（scrypt）哈希存储，`check_password_hash` 验证
@@ -191,6 +201,7 @@ SQL 源文件：[db_advanced.sql](db_advanced.sql)
 
 - **修改密码**：`/change-password`，所有角色可访问，验证原密码后修改
 - **批量费用**：`/fees/batch` 调用 `sp_generate_fees` 为整栋楼在住学生生成费用
+- **房间管理**：创建宿舍楼时自动生成所有房间（`楼层×每层房间数`），房间号按 `{楼层}{序号}` 命名（如101/102/201/202）。房间不可手动增删（反映真实物理结构），仅可编辑房型/容量/价格。`is_active` 字段支持禁用/启用房间（禁用后不可入住和调换），替代物理删除
 - **退宿流程**：学生端"我的住宿"申请 → 创建 `CheckoutRequest`(pending) → 宿管员"退宿审核"审批 → 批准后自动更新 accommodation + `trg_accommodation_checkout` 触发器扣减 room.occupied；拒绝则申请关闭。学生不可重复申请
 - **宿舍调换**：学生端"我的住宿"选择同楼空房间申请调换 → 创建 `TransferRequest`(pending) → 宿管员"宿舍调换"审批 → 批准后调用 `sp_room_transfer` 原子迁移住宿记录并更新两间房 occupied；拒绝则申请关闭。学生不可重复申请
 - 首页按角色分流：学生端展示个人住宿/室友/报修/费用；管理员端展示全局统计 + 各楼入住率（调用 `fn_occupancy_rate`）

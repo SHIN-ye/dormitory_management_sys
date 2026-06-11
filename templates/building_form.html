@@ -12,6 +12,13 @@
             <label>层数</label>
             <input type="number" name="floors" value="{{ building.floors if building else 6 }}" min="1" max="20" class="form-control">
         </div>
+        {% if not building %}
+        <div class="form-group">
+            <label>每层房间数</label>
+            <input type="number" name="rooms_per_floor" value="3" min="1" max="99" class="form-control">
+            <small>房间号自动生成：{楼层}+{序号}（如101、102、103…）</small>
+        </div>
+        {% endif %}
         <div class="form-group">
             <label>地址</label>
             <input type="text" name="address" value="{{ building.address if building else '' }}" class="form-control">

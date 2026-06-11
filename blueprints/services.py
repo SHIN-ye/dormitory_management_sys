@@ -52,7 +52,7 @@ def repair_export():
 
 
 @bp.route("/repair/add", methods=["GET", "POST"])
-@login_required
+@role_required("admin", "dorm_manager")
 def repair_add():
     if request.method == "POST":
         filename = None
@@ -72,7 +72,7 @@ def repair_add():
         flash("报修提交成功", "success")
         return redirect(url_for("services.repair_list"))
     students = Student.query.order_by(Student.sno).all()
-    rooms = Room.query
+    rooms = Room.query.filter_by(is_active=True)
     if get_manager_building_id():
         rooms = rooms.filter_by(building_id=get_manager_building_id())
     rooms = rooms.order_by(Room.building_id, Room.room_number).all()
@@ -138,7 +138,7 @@ def visitor_export():
 
 
 @bp.route("/visitor/add", methods=["GET", "POST"])
-@login_required
+@role_required("admin", "dorm_manager")
 def visitor_add():
     if request.method == "POST":
         id_card = request.form.get("id_card", "").strip()
@@ -223,7 +223,7 @@ def fee_add():
             flash("金额必须为正数", "warning")
             return render_template("fee_form.html", fee=None,
                 students=Student.query.order_by(Student.sno).all(),
-                rooms=Room.query.order_by(Room.building_id, Room.room_number).all())
+                rooms=Room.query.filter_by(is_active=True).order_by(Room.building_id, Room.room_number).all())
         f = Fee(
             student_id=request.form["student_id"],
             room_id=request.form["room_id"],
@@ -238,7 +238,7 @@ def fee_add():
         flash("费用添加成功", "success")
         return redirect(url_for("services.fee_list"))
     students = Student.query.order_by(Student.sno).all()
-    rooms = Room.query
+    rooms = Room.query.filter_by(is_active=True)
     if get_manager_building_id():
         rooms = rooms.filter_by(building_id=get_manager_building_id())
     rooms = rooms.order_by(Room.building_id, Room.room_number).all()

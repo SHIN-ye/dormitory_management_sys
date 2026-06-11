@@ -21,14 +21,17 @@ CREATE PROCEDURE sp_checkin(
 BEGIN
     DECLARE v_capacity INT;
     DECLARE v_occupied INT;
-    DECLARE v_existing INT;
+    DECLARE v_existing_id INT DEFAULT NULL;
 
-    -- 检查学生是否已入住
-    SELECT COUNT(*) INTO v_existing
+    -- 锁定该学生已有入住记录（FOR UPDATE 阻止并发重复入住）
+    -- 用 SELECT id（非聚合）＋ FOR UPDATE，具体行锁 + 间隙锁防并发 INSERT
+    SELECT id INTO v_existing_id
     FROM accommodation
-    WHERE student_id = p_student_id AND status = '入住';
+    WHERE student_id = p_student_id AND status = '入住'
+    LIMIT 1
+    FOR UPDATE;
 
-    IF v_existing > 0 THEN
+    IF v_existing_id IS NOT NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '该学生已入住，请先退宿';
     END IF;
 
@@ -164,6 +167,21 @@ FOR EACH ROW
 BEGIN
     IF NEW.status = '已退宿' AND OLD.status = '入住' THEN
         UPDATE room SET occupied = occupied - 1 WHERE id = NEW.room_id;
+    END IF;
+END$$
+
+
+-- ============================================================
+-- 7. 触发器：删除入住记录自动减少房间人数
+-- 当学生被删除级联删除 accommodation 时，同步扣减 room.occupied
+-- ============================================================
+DROP TRIGGER IF EXISTS trg_accommodation_delete$$
+CREATE TRIGGER trg_accommodation_delete
+AFTER DELETE ON accommodation
+FOR EACH ROW
+BEGIN
+    IF OLD.status = '入住' THEN
+        UPDATE room SET occupied = occupied - 1 WHERE id = OLD.room_id;
     END IF;
 END$$
 

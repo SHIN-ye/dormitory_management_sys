@@ -80,7 +80,7 @@ def accommodation_add():
         return redirect(url_for("housing.accommodation_list"))
     manager_bid = get_manager_building_id()
     students = Student.query.order_by(Student.sno).all()
-    rooms = Room.query
+    rooms = Room.query.filter_by(is_active=True)
     if manager_bid:
         rooms = rooms.filter_by(building_id=manager_bid)
     rooms = rooms.order_by(Room.building_id, Room.room_number).all()
@@ -156,6 +156,9 @@ def transfer_request():
         flash("请选择目标房间", "warning")
         return redirect(url_for("main.my_accommodation"))
     target_room = Room.query.get_or_404(to_room_id)
+    if not target_room.is_active:
+        flash("目标房间已停用", "warning")
+        return redirect(url_for("main.my_accommodation"))
     if target_room.occupied >= target_room.capacity:
         flash("目标房间已满", "warning")
         return redirect(url_for("main.my_accommodation"))

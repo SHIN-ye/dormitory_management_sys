@@ -7,9 +7,9 @@ from models import db, Building, Room, Student, Accommodation, Repair, Visitor, 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
-    db.init_app(app)
-
+    app.config.from_object(Config) # 加载配置类
+    db.init_app(app) # 初始化
+    # 延迟导入, 注册七个蓝图
     from blueprints.auth import bp as auth_bp
     from blueprints.main import bp as main_bp
     from blueprints.buildings import bp as buildings_bp
@@ -46,16 +46,19 @@ def init_db():
     db.session.add_all([b1, b2])
     db.session.flush()
 
-    rooms = []
+    # 自动生成房间（每层3间：如101/102/103、201/202/203…）
     for b in [b1, b2]:
-        for floor in range(1, 4):
-            for rn in [f"{floor}01", f"{floor}02", f"{floor}03"]:
-                rooms.append(Room(
-                    room_number=rn, building_id=b.id, capacity=4,
+        for floor in range(1, 4):  # 种子数据只用到3楼
+            for rn_idx in range(1, 4):
+                room_number = f"{floor}0{rn_idx}"
+                db.session.add(Room(
+                    room_number=room_number, building_id=b.id, capacity=4,
                     occupied=0, room_type="四人间", price=1200.0,
                 ))
-    db.session.add_all(rooms)
     db.session.flush()
+
+    # 重新加载房间列表（按创建顺序）
+    rooms = Room.query.order_by(Room.id).all()
 
     users = [
         User(username="admin", password=generate_password_hash("admin123"), role="admin"),

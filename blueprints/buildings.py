@@ -47,19 +47,46 @@ def building_export():
 def building_add():
     if request.method == "POST":
         floors = int(request.form.get("floors", 6))
+        rooms_per_floor = int(request.form.get("rooms_per_floor", 3))
         if floors < 1:
             flash("楼层数至少为1", "warning")
             return render_template("building_form.html", building=None)
+        if rooms_per_floor < 1 or rooms_per_floor > 99:
+            flash("每层房间数应在1~99之间", "warning")
+            return render_template("building_form.html", building=None)
+
+        # 防止重名
+        if Building.query.filter_by(name=request.form["name"].strip()).first():
+            flash("宿舍楼名称已存在", "warning")
+            return render_template("building_form.html", building=None)
+
         b = Building(
-            name=request.form["name"],
+            name=request.form["name"].strip(),
             floors=floors,
-            address=request.form.get("address", ""),
-            manager=request.form.get("manager", ""),
+            address=request.form.get("address", "").strip(),
+            manager=request.form.get("manager", "").strip(),
         )
         db.session.add(b)
+        db.session.flush()  # 拿到 b.id
+
+        # 自动生成所有房间（每层 rooms_per_floor 间）
+        suffix_width = len(str(rooms_per_floor))
+        for floor in range(1, floors + 1):
+            for rn_idx in range(1, rooms_per_floor + 1):
+                room_number = f"{floor}{str(rn_idx).zfill(suffix_width)}"
+                db.session.add(Room(
+                    room_number=room_number,
+                    building_id=b.id,
+                    capacity=4,
+                    occupied=0,
+                    room_type="四人间",
+                    price=1200.0,
+                ))
+
         db.session.commit()
-        log_operation(f"添加宿舍楼「{b.name}」", "building", b.id)
-        flash("添加成功", "success")
+        total_rooms = floors * rooms_per_floor
+        log_operation(f"添加宿舍楼「{b.name}」({floors}层×{rooms_per_floor}间={total_rooms}间)", "building", b.id)
+        flash(f"添加成功，已自动生成 {total_rooms} 个房间", "success")
         return redirect(url_for("buildings.building_list"))
     return render_template("building_form.html", building=None)
 
@@ -97,7 +124,7 @@ def building_delete(bid):
 
 
 # ============================================================
-# 房间
+# 房间（只读管理：禁止增删，仅可编辑房型/容量/价格，可禁用/启用）
 # ============================================================
 
 def _build_room_query(search, bid):
@@ -128,66 +155,43 @@ def room_export():
     rooms = _build_room_query(search, bid).all()
     return export_excel(
         "房间列表",
-        ["宿舍楼", "房间号", "类型", "容量", "已住", "价格(元/年)"],
-        [[r.building.name, r.room_number, r.room_type, r.capacity, r.occupied, r.price] for r in rooms],
+        ["宿舍楼", "房间号", "类型", "容量", "已住", "价格(元/年)", "状态"],
+        [[r.building.name, r.room_number, r.room_type, r.capacity, r.occupied, r.price,
+          "可用" if r.is_active else "已禁用"] for r in rooms],
     )
-
-
-@bp.route("/room/add", methods=["GET", "POST"])
-@role_required("admin")
-def room_add():
-    if request.method == "POST":
-        capacity = int(request.form.get("capacity", 4))
-        if capacity < 1:
-            flash("房间容量至少为1", "warning")
-            return render_template("room_form.html", room=None, buildings=Building.query.all())
-        r = Room(
-            room_number=request.form["room_number"],
-            building_id=request.form["building_id"],
-            capacity=capacity,
-            occupied=request.form.get("occupied", 0),
-            room_type=request.form.get("room_type", "四人间"),
-            price=request.form.get("price", 1200.0),
-        )
-        db.session.add(r)
-        db.session.commit()
-        log_operation(f"添加房间「{r.room_number}」", "room", r.id)
-        flash("添加成功", "success")
-        return redirect(url_for("buildings.room_list"))
-    buildings = Building.query.all()
-    return render_template("room_form.html", room=None, buildings=buildings)
 
 
 @bp.route("/room/<int:rid>/edit", methods=["GET", "POST"])
 @role_required("admin")
 def room_edit(rid):
+    """仅允许修改房型、容量、价格（房间号由建筑结构决定不可改）"""
     r = Room.query.get_or_404(rid)
     if request.method == "POST":
         capacity = int(request.form.get("capacity", 4))
         if capacity < 1:
             flash("房间容量至少为1", "warning")
-            return render_template("room_form.html", room=r, buildings=Building.query.all())
-        r.room_number = request.form["room_number"]
-        r.building_id = request.form["building_id"]
+            return render_template("room_form.html", room=r)
+        if capacity < r.occupied:
+            flash(f"容量({capacity})不能小于已住人数({r.occupied})", "warning")
+            return render_template("room_form.html", room=r)
         r.capacity = capacity
-        r.occupied = request.form.get("occupied", 0)
         r.room_type = request.form.get("room_type", "四人间")
-        r.price = request.form.get("price", 1200.0)
+        r.price = float(request.form.get("price", 1200.0))
         db.session.commit()
-        log_operation(f"修改房间「{r.room_number}」", "room", r.id)
+        log_operation(f"修改房间「{r.building.name}-{r.room_number}」", "room", r.id)
         flash("修改成功", "success")
         return redirect(url_for("buildings.room_list"))
-    buildings = Building.query.all()
-    return render_template("room_form.html", room=r, buildings=buildings)
+    return render_template("room_form.html", room=r)
 
 
-@bp.route("/room/<int:rid>/delete", methods=["POST"])
+@bp.route("/room/<int:rid>/toggle-active", methods=["POST"])
 @role_required("admin")
-def room_delete(rid):
+def room_toggle_active(rid):
+    """禁用/启用房间（禁用后该房间不可用于入住和调换）"""
     r = Room.query.get_or_404(rid)
-    rn = r.room_number
-    db.session.delete(r)
+    r.is_active = not r.is_active
     db.session.commit()
-    log_operation(f"删除房间「{rn}」", "room", rid)
-    flash("删除成功", "success")
+    action = "启用" if r.is_active else "禁用"
+    log_operation(f"{action}房间「{r.building.name}-{r.room_number}」", "room", r.id)
+    flash(f"房间「{r.building.name}-{r.room_number}」已{action}", "success")
     return redirect(url_for("buildings.room_list"))

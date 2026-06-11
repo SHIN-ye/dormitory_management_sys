@@ -165,6 +165,7 @@ def my_accommodation():
             Room.building_id == building_id,
             Room.id != acc.room_id,
             Room.occupied < Room.capacity,
+            Room.is_active == True,
         ).order_by(Room.room_number).all()
     return render_template("my_accommodation.html", acc=acc, roommates=roommates, available_rooms=available_rooms)
 
@@ -265,7 +266,11 @@ def my_profile():
         flash("未关联学生信息", "warning")
         return redirect(url_for("main.index"))
     if request.method == "POST":
-        student.phone = request.form.get("phone")
+        phone = request.form.get("phone", "").strip()
+        if phone and not re.match(r"^1\d{10}$", phone):
+            flash("手机号格式不正确（11位数字，以1开头）", "warning")
+            return render_template("my_profile.html", student=student)
+        student.phone = phone or None
         db.session.commit()
         flash("个人信息已更新", "success")
         return redirect(url_for("main.my_profile"))
@@ -273,5 +278,6 @@ def my_profile():
 
 
 @bp.route("/uploads/<filename>")
+@login_required
 def uploaded_file(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
