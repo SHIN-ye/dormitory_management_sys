@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config) # 加载配置类
     db.init_app(app) # 初始化
-    # 延迟导入, 注册七个蓝图
+    # 注册七个蓝图
     from blueprints.auth import bp as auth_bp
     from blueprints.main import bp as main_bp
     from blueprints.buildings import bp as buildings_bp

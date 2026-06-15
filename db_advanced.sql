@@ -10,7 +10,7 @@ USE dormitory_management;
 -- 原子操作：检查 → 插入 → 更新房间人数
 -- 事务由应用层（SQLAlchemy）管理
 -- ============================================================
-DELIMITER $$
+DELIMITER $$ -- 更改一个结束符，以允许存储过程内使用分号
 
 DROP PROCEDURE IF EXISTS sp_checkin$$
 CREATE PROCEDURE sp_checkin(
@@ -72,7 +72,7 @@ BEGIN
     JOIN room r ON a.room_id = r.id
     WHERE r.building_id = p_building_id AND a.status = '入住';
 
-    SET v_count = ROW_COUNT();
+    SET v_count = ROW_COUNT(); -- 影响了多少行
     SELECT v_count AS affected_rows;
 END$$
 

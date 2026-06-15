@@ -5,7 +5,6 @@
 <h1>房间管理</h1>
 <p class="toolbar">
     <a href="{{ url_for('buildings.room_export', search=search, building_id=current_building) }}" class="btn">📥 导出Excel</a>
-    <small style="color:#666">房间由创建宿舍楼时自动生成，不可手动增删。如需停用某房间请点击"禁用"。</small>
 </p>
 <div class="search-bar">
     <form method="get" action="{{ url_for('buildings.room_list') }}">
